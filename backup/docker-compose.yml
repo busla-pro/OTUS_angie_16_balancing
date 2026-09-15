@@ -1,0 +1,41 @@
+services:
+  backend-red:
+    image: docker.angie.software/angie:latest
+    container_name: backend-red
+    volumes:
+      - ../upstreams/http_red.conf:/etc/angie/http.d/default.conf
+    networks:
+      - backends
+  backend-blue:
+    image: docker.angie.software/angie:latest
+    container_name: backend-blue
+    volumes:
+      - ../upstreams/http_blue.conf:/etc/angie/http.d/default.conf
+    networks:
+      - backends
+  backend-yellow:
+    image: docker.angie.software/angie:latest
+    container_name: backend-yellow
+    volumes:
+      - ../upstreams/http_yellow.conf:/etc/angie/http.d/default.conf
+    networks:
+      - backends
+  backend-green:
+    image: docker.angie.software/angie:latest
+    container_name: backend-green
+    volumes:
+      - ../upstreams/http_green.conf:/etc/angie/http.d/default.conf
+    networks:
+      - backends
+  angie-balancer:
+    image: docker.angie.software/angie:latest
+    container_name: angie-balancer
+    volumes:
+      - ./balancer/http_angie.conf:/etc/angie/http.d/default.conf
+    ports:
+      - "80:80"
+    networks:
+      - backends
+networks:
+  backends:
+    driver: bridge
