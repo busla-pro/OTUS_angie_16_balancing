@@ -79,7 +79,7 @@
         green ( /1.html )
         ```
 4. стенд балансировки по варианту "Произвольная балансировка (random)" разместим в каталоге `random`
-    1. возьмём конфигурацию стенда `round-robin`, в в директиву `upstream` добавим случайную балансировку:
+    1. возьмём конфигурацию стенда `round-robin`, в директиву `upstream` добавим случайную балансировку:
         ```
         random;
         ```
@@ -113,3 +113,49 @@
         blue ( /9.html )
         yellow ( /10.html )
         ```
+5. стенд балансировки по варианту "резервный бэкэнд с отключением одного из бэкэндов" разместим в каталоге `backup`
+    1. возьмём конфигурацию стенда `round-robin`, в директиве `upstream` двум серверам пропишем `backup`
+    2. сделаем снаружи 10 запросов с разным `uri`:
+    ```
+    1..10 | % { Invoke-webRequest -UseBasicParsing -Uri "http://192.168.129.131/$_.html" } | % Content
+    ```
+    запросы по кругу распределяются по двум основным серверам:
+    ```
+    red ( /1.html )
+    blue ( /2.html )
+    red ( /3.html )
+    blue ( /4.html )
+    red ( /5.html )
+    blue ( /6.html )
+    red ( /7.html )
+    blue ( /8.html )
+    red ( /9.html )
+    blue ( /10.html )
+    ```
+    3. остановим контейнер `backend-red` и повторим 10 запросов - все их обработал один оставшийся основной сервер:
+    ```
+    blue ( /1.html )
+    blue ( /2.html )
+    blue ( /3.html )
+    blue ( /4.html )
+    blue ( /5.html )
+    blue ( /6.html )
+    blue ( /7.html )
+    blue ( /8.html )
+    blue ( /9.html )
+    blue ( /10.html )
+    ```
+    4. остановим контейнер `backend-blue` и повторим 10 запросов
+    ```
+    yellow ( /1.html )
+    green ( /2.html )
+    yellow ( /3.html )
+    green ( /4.html )
+    yellow ( /5.html )
+    green ( /6.html )
+    yellow ( /7.html )
+    green ( /8.html )
+    yellow ( /9.html )
+    green ( /10.html )
+    ```
+    При выходе из строя всех основных бэкэндов трафик начал распределяться распределилися на все резервные.
